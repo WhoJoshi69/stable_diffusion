@@ -65,8 +65,48 @@ async def fetch_image(image_url):
             await asyncio.sleep(0.5)
 
 
+model_map = {"absolutereality_v181 (hyper realism)": "absolutereality_v181.safetensors [3d9d4d2b]",
+             "Realistic_Vision_V5.0.safetensors (hyper realism)": "Realistic_Vision_V5.0.safetensors [614d1063]",
+             "amIReal_V41.safetensors (hyper realism)": "amIReal_V41.safetensors [0a8a2e61]",
+             "cyberrealistic_v33.safetensors (hyper realism)": "cyberrealistic_v33.safetensors [82b0d085]",
+             "edgeOfRealism_eorV20.safetensors (hyper realism)": "edgeOfRealism_eorV20.safetensors [3ed5de15]",
+             "ICantBelieveItsNotPhotography_seco.safetensors (hyper realism)": "ICantBelieveItsNotPhotography_seco.safetensors [4e7a3dfd]",
+             "epicrealism_naturalSinRC1VAE.safetensors (hyper realism)": "epicrealism_naturalSinRC1VAE.safetensors [90a4c676]",
+             "juggernaut_aftermath.safetensors (hyper realism)": "juggernaut_aftermath.safetensors [5e20c455]",
+             "majicmixRealistic_v4.safetensors (hyper realism)": "majicmixRealistic_v4.safetensors [29d0de58]",
+             "rundiffusionFX_v10.safetensors (hyper realism)": "rundiffusionFX_v10.safetensors [cd4e694d]",
+             "portraitplus_V1.0.safetensors (portrait)": "portraitplus_V1.0.safetensors [1400e684]",
+             "shoninsBeautiful_v10.safetensors (portrait)": "shoninsBeautiful_v10.safetensors [25d8c546]",
+             "lyriel_v16.safetensors (semi real)": "lyriel_v16.safetensors [68fceea2]",
+             "analog-diffusion-1.0.ckpt (nature)": "analog-diffusion-1.0.ckpt [9ca13f02]",
+             "rundiffusionFX25D_v10.safetensors (2.5d)": "rundiffusionFX25D_v10.safetensors [cd12b0ee]",
+             "anythingV5_PrtRE.safetensors (anime)": "anythingV5_PrtRE.safetensors [893e49b9]",
+             "AOM3A3_orangemixs.safetensors (anime)": "AOM3A3_orangemixs.safetensors [9600da17]",
+             "dalcefo_v4.safetensors (anime)": "dalcefo_v4.safetensors [425952fe]",
+             "mechamix_v10.safetensors (anime)": "mechamix_v10.safetensors [ee685731]",
+             "cetusMix_Version35.safetensors (artistic)": "cetusMix_Version35.safetensors [de2f2560]",
+             "elldreths-vivid-mix.safetensors (cartoon)": "elldreths-vivid-mix.safetensors [342d9d26]",
+             "childrensStories_v13D.safetensors (cartoon)": "childrensStories_v13D.safetensors [9dfaabcb]",
+             "revAnimated_v122.safetensors (cartoon)": "revAnimated_v122.safetensors [3f4fefd9]",
+             "meinamix_meinaV11.safetensors (cartoon)": "meinamix_meinaV11.safetensors [b56ce717]",
+             "childrensStories_v1SemiReal.safetensors (cartoon)": "childrensStories_v1SemiReal.safetensors [a1c56dbb]",
+             "dreamshaper_8.safetensors (cartoon)": "dreamshaper_8.safetensors [9d40847d]",
+             "toonyou_beta6.safetensors (cartoon)": "toonyou_beta6.safetensors [980f6b15]",
+             "childrensStories_v1ToonAnime.safetensors (anime)": "childrensStories_v1ToonAnime.safetensors [2ec7b88b]",
+             "Counterfeit_v30.safetensors (vintage cartoon)": "Counterfeit_v30.safetensors [9e2a8f19]",
+             "cuteyukimixAdorable_midchapter3.safetensors (vintage cartoon)": "cuteyukimixAdorable_midchapter3.safetensors [04bdffe6]",
+             "deliberate_v3.safetensors (dreamy)": "deliberate_v3.safetensors [afd9d2d4]",
+             "dreamlike-diffusion-1.0.safetensors (dreamy)": "dreamlike-diffusion-1.0.safetensors [5c9fd6e0]",
+             "neverendingDream_v122.safetensors [dreamy]": "neverendingDream_v122.safetensors [f964ceeb]",
+             "openjourney_V4.ckpt [2d]": "openjourney_V4.ckpt [ca2f377f]",
+             "pastelMixStylizedAnime_pruned_fp16.safetensors (2d horror) ": "pastelMixStylizedAnime_pruned_fp16.safetensors [793a26e8]",
+             }
+
+
 @app.get("/fetch_everything/")
-async def fetch_everything(prompt, tags):
+async def fetch_everything(prompt, tags, model):
+    if not model:
+        model = "absolutereality_v181.safetensors [3d9d4d2b]"
     prompt += "8k image"
     for tag in tags:
         prompt += ", " + tag
@@ -98,7 +138,7 @@ async def fetch_everything(prompt, tags):
         "steps": 100,
         "cfg": 7,
         "prompt": prompt,
-        "model": "absolutereality_v181.safetensors [3d9d4d2b]",
+        "model": model,
         "negative_prompt": "ugly, deformed, noisy, blurry, distorted, out of focus, bad anatomy, extra limbs, poorly drawn face, poorly drawn hands, missing fingers",
         "sampler": "DPM++ 2M Karras",
         "seed": -1,
