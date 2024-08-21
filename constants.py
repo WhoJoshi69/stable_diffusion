@@ -2,6 +2,7 @@ DEFAULT_PROMPT = "Act like an experienced text-to-image prompt engineer for stab
 
 DEFAULT_PROMPT_2 = "give me a short stable diffusion prompt and negative prompt for this. Don't add your narration in the beginning or end. Just give the prompt"
 
+DEFAULT_NEGATIVE_PROMPT = "low quality, extra limbs, low detail"
 model_tag_map = model_labels = {
     "absolutereality_v181.safetensors [3d9d4d2b]": "hyper realism",
     "Realistic_Vision_V5.0.safetensors [614d1063]": "hyper realism",
