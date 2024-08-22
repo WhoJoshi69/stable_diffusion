@@ -25,10 +25,6 @@ GENERATE_API_ENDPOINT = "https://api.prodia.com/generate"
 IMAGE_API_ENDPOINT = "https://images.prodia.xyz"
 PROMPT_EXPAND_ENDPOINT = 'https://www.feedough.com/wp-admin/admin-ajax.php'
 
-createPrompts(1)
-with open('prompts.txt', 'r') as file:
-    content = file.read()
-
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -76,9 +72,16 @@ async def fetch_image(image_url):
 @app.get("/fetch_everything/")
 async def fetch_everything(prompt, tags, model):
     print(f"received prompt: {prompt}, tags: {tags}, model: {model}")
+    createPrompts(1)
+    with open('prompts.txt', 'r') as file:
+        content = file.read()
     if not model:
         model = "absolutereality_v181.safetensors [3d9d4d2b]"
     prompt += ", 8k image, highly detailed, detailed eyes, detailed skin textures, detailed lips"
+
+    if "woman, women, man, men, people" in prompt:
+        prompt += "full body image, wide angele shot"
+
     if "nsfw" in prompt:
         prompt += content
     for tag in tags:
