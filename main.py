@@ -72,59 +72,19 @@ async def fetch_image(image_url):
 @app.get("/fetch_everything/")
 async def fetch_everything(prompt, tags, model):
     print(f"received prompt: {prompt}, tags: {tags}, model: {model}")
-    createPrompts(1)
-    with open('prompts.txt', 'r') as file:
-        content = file.read()
+    prompt = createPrompts(prompt)
     if not model:
         model = "absolutereality_v181.safetensors [3d9d4d2b]"
     prompt += ", 8k image, highly detailed, detailed eyes, detailed skin textures, detailed lips"
 
-    if "woman, women, man, men, people" in prompt:
-        prompt += "full body image, wide angele shot"
+    # if "woman, women, man, men, people" in prompt:
+    #     prompt += "full body image, wide angele shot"
 
-    if "nsfw" in prompt:
-        prompt += content
     for tag in tags:
         prompt += ", image style " + tag
 
     prompt += ", image style of " + constants.model_tag_map[model]
-
-    # headers = {
-    #     'authority': 'www.feedough.com',
-    #     'accept': '*/*',
-    #     'accept-language': 'en-US,en;q=0.7',
-    #     'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
-    #     'cookie': 'ext_name=ojplmecpdpgccookcobabopnaifgidhf; _ga=GA1.1.2086675295.1708885051; aixg_user_id=aixg_65db843e334939.18757862; tve_leads_unique=1; tl_3314_3315_43=a%3A1%3A%7Bs%3A6%3A%22log_id%22%3BN%3B%7D; tl_3314_30184_75=a%3A1%3A%7Bs%3A6%3A%22log_id%22%3BN%3B%7D; _ga_722BX5RSV3=GS1.1.1708885050.1.1.1708885065.45.0.0; aixg_user_id=aixg_65db86a98b03d1.46449765',
-    #     'origin': 'https://www.feedough.com',
-    #     'referer': 'https://www.feedough.com/stable-diffusion-prompt-generator/',
-    #     'sec-ch-ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Brave";v="122"',
-    #     'sec-ch-ua-mobile': '?0',
-    #     'sec-ch-ua-platform': '"Windows"',
-    #     'sec-fetch-dest': 'empty',
-    #     'sec-fetch-mode': 'cors',
-    #     'sec-fetch-site': 'same-origin',
-    #     'sec-gpc': '1',
-    #     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    # }
-    #
-    # data = {
-    #     'action': 'aixg_generate',
-    #     'prompt': constants.DEFAULT_PROMPT + " - " + prompt + " - " + constants.DEFAULT_PROMPT_2,
-    #     '_ts': '1708885412291',
-    #     'form_id': 'ai_x_generator_65db28276d07f',
-    # }
-    # # Make the request with cookies and payload
-    # response = requests.post(PROMPT_EXPAND_ENDPOINT, headers=headers, data=data)
-    #
-    # # Check the response status code
-    # if response.status_code == 200:
-    #     # API request was successful
-    #     prompt = response.json()["data"]["message"]
-    #     print(f"this is expanded prompt: {prompt}")
-    # else:
-    #     # API request failed
-    #     print('API request failed with status code:', response.status_code)
-
+    print(f"PROMPT: {prompt}")
     params = {
         "new": "true",
         "steps": 100,
