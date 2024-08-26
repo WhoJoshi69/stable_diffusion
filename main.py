@@ -1,13 +1,12 @@
+import base64
 import io
-
-import requests
+import aiohttp
+import asyncio
 from fastapi import FastAPI, Request, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-import asyncio
-
-from fastapi.responses import StreamingResponse
-from starlette.websockets import WebSocketDisconnect
+from fastapi.websockets import WebSocketDisconnect
+from starlette.responses import JSONResponse
 
 import constants
 from nsfw_gen import createPrompts
@@ -23,7 +22,27 @@ websocket_connections = []
 # API endpoints
 GENERATE_API_ENDPOINT = "https://api.prodia.com/generate"
 IMAGE_API_ENDPOINT = "https://images.prodia.xyz"
-PROMPT_EXPAND_ENDPOINT = 'https://www.feedough.com/wp-admin/admin-ajax.php'
+
+
+async def fetch_image(image_url: str) -> bytes:
+    while True:
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.get(image_url) as response:
+                    if response.status == 200:
+                        print("Image fetched successfully")
+                        return await response.read()
+                    else:
+                        await asyncio.sleep(0.5)
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                await asyncio.sleep(0.5)
+
+
+async def fetch_all_images(urls: list) -> list:
+    tasks = [fetch_image(url) for url in urls]
+    image_contents = await asyncio.gather(*tasks)
+    return image_contents
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -44,47 +63,29 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
 # Function to send messages to all connected clients
-async def send_message(message):
+async def send_message(message: str):
     for connection in websocket_connections:
         await connection.send_text(message)
 
 
-# Modify your print statements to send messages to the frontend
-def print_to_frontend(message):
+def print_to_frontend(message: str):
     print(message)  # Print to console as well
-    asyncio.run(send_message(message))
-
-
-async def fetch_image(image_url):
-    while True:
-        # Fetch the image using the provided URL
-        image_response = requests.get(image_url)
-
-        if image_response.status_code == 200:
-            # If successful, return the image content
-            print("image created successfully, now plotting to front end")
-            return image_response.content
-        else:
-            # If not successful, wait for 0.5 seconds before retrying
-            await asyncio.sleep(0.5)
+    asyncio.create_task(send_message(message))
 
 
 @app.get("/fetch_everything/")
-async def fetch_everything(prompt, tags, model):
-    print(f"received prompt: {prompt}, tags: {tags}, model: {model}")
+async def fetch_everything(prompt: str, tags: str, model: str):
+    print(f"Received prompt: {prompt}, tags: {tags}, model: {model}")
+    for tag in tags.split(','):
+        prompt += ", image style " + tag
     prompt = createPrompts(prompt)
     if not model:
         model = "absolutereality_v181.safetensors [3d9d4d2b]"
     prompt += ", 8k image, highly detailed, detailed eyes, detailed skin textures, detailed lips"
 
-    # if "woman, women, man, men, people" in prompt:
-    #     prompt += "full body image, wide angele shot"
-
-    for tag in tags:
-        prompt += ", image style " + tag
-
-    prompt += ", image style of " + constants.model_tag_map[model]
+    prompt += ", image style of " + constants.model_tag_map.get(model, model)
     print(f"PROMPT: {prompt}")
+
     params = {
         "new": "true",
         "steps": 100,
@@ -96,26 +97,25 @@ async def fetch_everything(prompt, tags, model):
         "seed": -1,
         "aspect_ratio": "square"
     }
-    print("generating image...")
-    response = requests.get(GENERATE_API_ENDPOINT, params=params)
 
-    if response.status_code == 200:
-        # Extract the job ID from the response
-        response_json = response.json()
-        job_id = response_json.get("job")
-        print("image generated, now converting it to jpg...")
-        # Use the job ID to construct the URL for the image API
-        image_url = f"{IMAGE_API_ENDPOINT}/{job_id}.png?download=1"
+    print("Generating image...")
+    image_urls = []
+    async with aiohttp.ClientSession() as session:
+        responses = [await session.get(GENERATE_API_ENDPOINT, params=params) for _ in range(6)]
+        for response in responses:
+            if response.status == 200:
+                response_json = await response.json()
+                job_id = response_json.get("job")
+                print("Image generated, now fetching...")
+                image_urls.append(f"{IMAGE_API_ENDPOINT}/{job_id}.png?download=1")
+            else:
+                return {"error": "Failed to generate the image"}
+    base64_images = []
+    image_contents = await fetch_all_images(image_urls)
+    for image_content in image_contents:
+        base64_images.append(base64.b64encode(image_content).decode('utf-8'))
 
-        # Fetch the image using the constructed URL
-        image_content = await fetch_image(image_url)
-
-        # Return StreamingResponse with image content and appropriate content type
-        x = StreamingResponse(io.BytesIO(image_content), media_type="image/png")
-        return x
-    else:
-        # Return an error message if the request to generate the image fails
-        return {"error": "Failed to generate the image"}
+    return JSONResponse(content=image_urls)
 
 
 if __name__ == "__main__":

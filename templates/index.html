@@ -114,6 +114,19 @@
         #download-button:hover {
             background-color: #0056b3;
         }
+        #image-container {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+#image-container img {
+    max-width: 256px;
+    max-height: 256px;
+    border-radius: 10px;
+    margin: 5px; /* Optional, for spacing between images */
+}
+
     </style>
 </head>
 <body>
@@ -207,46 +220,45 @@
             }
 
             form.addEventListener("submit", async (event) => {
-                event.preventDefault();
-                const promptInput = document.getElementById("prompt-input");
-                const prompt = promptInput.value;
+    event.preventDefault();
+    const promptInput = document.getElementById("prompt-input");
+    const prompt = promptInput.value;
 
-                if (prompt.trim() === "") {
-                    alert("Please enter a valid prompt.");
-                    return;
-                }
+    if (prompt.trim() === "") {
+        alert("Please enter a valid prompt.");
+        return;
+    }
 
-                // Get selected tags
-                const selectedTags = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(tag => tag.value);
+    const selectedTags = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(tag => tag.value);
 
-                // Hide the image and display the loader
-                resultImage.style.display = "none";
-                loader.style.display = "block";
-                downloadButton.style.display = 'none';
+    resultImage.style.display = "none";
+    loader.style.display = "block";
+    downloadButton.style.display = 'none';
 
-                try {
-                    const modelSelected = modelSelect.value;
+    try {
+        const modelSelected = modelSelect.value;
+        const response = await fetch(`/fetch_everything?prompt=${encodeURIComponent(prompt)}&tags=${selectedTags.join(',')}&model=${modelSelected}`);
+        const base64Images = await response.json();
 
-                    const response = await fetch(`/fetch_everything?prompt=${encodeURIComponent(prompt)}&tags=${selectedTags.join(',')}&model=${modelSelected}`);
-                    const blob = await response.blob();
-                    const imageURL = URL.createObjectURL(blob);
+        imageContainer.innerHTML = ''; // Clear any existing images
 
-                    // Display the result image and show the download button
-                    resultImage.src = imageURL;
-                    resultImage.style.display = "block";
-                    downloadButton.style.display = "block";
+        base64Images.forEach(base64Image => {
+            const img = document.createElement('img');
+            img.src = `data:image/png;base64,${base64Image}`;
+            img.style.display = "block";
+            imageContainer.appendChild(img);
+        });
 
-                    // Hide the loader after image loading
-                    loader.style.display = "none";
+        loader.style.display = "none";
+        downloadButton.style.display = "none"; // Adjust as needed
 
-                } catch (error) {
-                    console.error('Error fetching image:', error);
-                    alert("Error fetching image. Please try again later.");
+    } catch (error) {
+        console.error('Error fetching images:', error);
+        alert("Error fetching images. Please try again later.");
+        loader.style.display = "none";
+    }
+});
 
-                    // Hide the loader if an error occurs
-                    loader.style.display = "none";
-                }
-            });
 
             function downloadImage() {
                 const a = document.createElement('a');
