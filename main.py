@@ -131,7 +131,7 @@ async def fetch_everything(prompt: str, tags: str, model: str):
     for image_content in image_contents:
         base64_images.append(base64.b64encode(image_content).decode('utf-8'))
 
-    return JSONResponse(content=image_urls)
+    return JSONResponse(content=base64_images)
 
 
 if __name__ == "__main__":
