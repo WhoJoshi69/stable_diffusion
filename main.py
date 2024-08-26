@@ -2,6 +2,8 @@ import base64
 import io
 import aiohttp
 import asyncio
+
+import requests
 from fastapi import FastAPI, Request, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -20,7 +22,7 @@ templates = Jinja2Templates(directory="templates")
 websocket_connections = []
 
 # API endpoints
-GENERATE_API_ENDPOINT = "https://api.prodia.com/generate"
+GENERATE_API_ENDPOINT = "https://api.prodia.com/v1/sd/generate"
 IMAGE_API_ENDPOINT = "https://images.prodia.xyz"
 
 
@@ -91,33 +93,42 @@ async def fetch_everything(prompt: str, tags: str, model: str):
     print(f"PROMPT 2: {prompt2}")
 
     params1 = {
-        "new": "true",
-        "steps": 100,
-        "cfg": 7,
-        "prompt": prompt1,
         "model": model,
+        "prompt": prompt1,
         "negative_prompt": constants.DEFAULT_NEGATIVE_PROMPT,
-        "sampler": "DPM++ 2M Karras",
+        "steps": 25,
+        "cfg_scale": 7,
         "seed": -1,
-        "aspect_ratio": "square"
+        "sampler": "DPM++ 2M Karras",
+        "width": 1024,
+        "height": 1024
     }
     params2 = {
-        "new": "true",
-        "steps": 100,
-        "cfg": 7,
-        "prompt": prompt2,
         "model": model,
+        "prompt": prompt2,
         "negative_prompt": constants.DEFAULT_NEGATIVE_PROMPT,
-        "sampler": "DPM++ 2M Karras",
+        "steps": 25,
+        "cfg_scale": 7,
         "seed": -1,
-        "aspect_ratio": "square"
+        "sampler": "DPM++ 2M Karras",
+        "width": 1024,
+        "height": 1024
     }
-
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "X-Prodia-Key": "438d9f98-6b89-45e2-b3c9-8c8d93f8bdf0"
+    }
     print("Generating image...")
     image_urls = []
+    responses = []
     async with aiohttp.ClientSession() as session:
-        responses = [await session.get(GENERATE_API_ENDPOINT, params=params1) for _ in range(3)]
-        responses += [await session.get(GENERATE_API_ENDPOINT, params=params2) for _ in range(3)]
+        responses = [
+            await session.post(GENERATE_API_ENDPOINT, json=params1, headers=headers) for _ in range(3)
+        ]
+        responses += [
+            await session.post(GENERATE_API_ENDPOINT, json=params2, headers=headers) for _ in range(3)
+        ]
         for response in responses:
             if response.status == 200:
                 response_json = await response.json()
@@ -126,6 +137,7 @@ async def fetch_everything(prompt: str, tags: str, model: str):
                 image_urls.append(f"{IMAGE_API_ENDPOINT}/{job_id}.png?download=1")
             else:
                 return {"error": "Failed to generate the image"}
+
     base64_images = []
     image_contents = await fetch_all_images(image_urls)
     for image_content in image_contents:

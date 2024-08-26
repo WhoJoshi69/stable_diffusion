@@ -86,20 +86,22 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        #image-container {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            position: relative;
-            flex-direction: column;
-            align-items: center;
-        }
-        #image-container img {
-            max-width: 256px; /* Adjusted to half the size */
-            max-height: 256px; /* Adjusted to half the size */
-            border-radius: 10px; /* Rounded corners for the image */
-            display: none; /* Initially hide the image */
-        }
+#image-container {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 images per row */
+    gap: 10px; /* Space between images */
+    justify-content: center;
+}
+
+#image-container img {
+    width: 100%; /* Ensure the image takes up the full width of the grid column */
+    height: auto;
+    max-width: 1024px; /* Limit to the image's native resolution */
+    max-height: 1024px;
+    border-radius: 10px;
+}
+
         #download-button {
             margin-top: 10px;
             display: none;
