@@ -78,19 +78,34 @@ async def fetch_everything(prompt: str, tags: str, model: str):
     print(f"Received prompt: {prompt}, tags: {tags}, model: {model}")
     for tag in tags.split(','):
         prompt += ", image style " + tag
-    prompt = createPrompts(prompt)
+    prompt1 = createPrompts(prompt)
+    prompt2 = createPrompts(prompt)
     if not model:
         model = "absolutereality_v181.safetensors [3d9d4d2b]"
-    prompt += ", 8k image, highly detailed, detailed eyes, detailed skin textures, detailed lips"
+    prompt1 += ", 8k image, highly detailed, detailed eyes, detailed skin textures, detailed lips"
+    prompt2 += ", 8k image, highly detailed, detailed eyes, detailed skin textures, detailed lips"
 
-    prompt += ", image style of " + constants.model_tag_map.get(model, model)
-    print(f"PROMPT: {prompt}")
+    prompt1 += ", image style of " + constants.model_tag_map.get(model, model)
+    prompt2 += ", image style of " + constants.model_tag_map.get(model, model)
+    print(f"PROMPT 1: {prompt1}")
+    print(f"PROMPT 2: {prompt2}")
 
-    params = {
+    params1 = {
         "new": "true",
         "steps": 100,
         "cfg": 7,
-        "prompt": prompt,
+        "prompt": prompt1,
+        "model": model,
+        "negative_prompt": constants.DEFAULT_NEGATIVE_PROMPT,
+        "sampler": "DPM++ 2M Karras",
+        "seed": -1,
+        "aspect_ratio": "square"
+    }
+    params2 = {
+        "new": "true",
+        "steps": 100,
+        "cfg": 7,
+        "prompt": prompt2,
         "model": model,
         "negative_prompt": constants.DEFAULT_NEGATIVE_PROMPT,
         "sampler": "DPM++ 2M Karras",
@@ -101,7 +116,8 @@ async def fetch_everything(prompt: str, tags: str, model: str):
     print("Generating image...")
     image_urls = []
     async with aiohttp.ClientSession() as session:
-        responses = [await session.get(GENERATE_API_ENDPOINT, params=params) for _ in range(6)]
+        responses = [await session.get(GENERATE_API_ENDPOINT, params=params1) for _ in range(3)]
+        responses += [await session.get(GENERATE_API_ENDPOINT, params=params2) for _ in range(3)]
         for response in responses:
             if response.status == 200:
                 response_json = await response.json()
