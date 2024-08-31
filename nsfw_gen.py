@@ -1,10 +1,14 @@
+import os
+
 from groq import Groq
 
 import constants
 
-client = Groq(
-    api_key="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",
-)
+
+# The Groq client is used to generate new prompts from the given image
+# prompts. The API key is loaded from the environment variable
+# GROQ_API_KEY.
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 
 def createPrompts(prompt):
@@ -24,7 +28,7 @@ def createPrompts(prompt):
         messages=[
             {
                 "role": "system",
-                "content": constants.DEFAULT_PROMPT_3
+                "content": constants.DEFAULT_PROMPT_4 if "nsfw" in prompt else constants.DEFAULT_PROMPT_3
             },
             {
                 "role": "user",
