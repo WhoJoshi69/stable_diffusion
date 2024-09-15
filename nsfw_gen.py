@@ -28,7 +28,7 @@ def createPrompts(prompt):
         messages=[
             {
                 "role": "system",
-                "content": constants.DEFAULT_PROMPT_4 if "nsfw" in prompt else constants.DEFAULT_PROMPT_3
+                "content": constants.DEFAULT_PROMPT_4 if "nsfw" in prompt else constants.DEFAULT_PROMPT_2
             },
             {
                 "role": "user",

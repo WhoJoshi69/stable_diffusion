@@ -84,11 +84,9 @@ async def fetch_everything(prompt: str, tags: str, model: str):
     prompt2 = createPrompts(prompt)
     if not model:
         model = "absolutereality_v181.safetensors [3d9d4d2b]"
-    prompt1 += ", 8k image, highly detailed, detailed eyes, detailed skin textures, detailed lips"
-    prompt2 += ", 8k image, highly detailed, detailed eyes, detailed skin textures, detailed lips"
+    prompt1 += ", 8k image, highly detailed"
+    prompt2 += ", 8k image, highly detailed"
 
-    prompt1 += ", image style of " + constants.model_tag_map.get(model, model)
-    prompt2 += ", image style of " + constants.model_tag_map.get(model, model)
     print(f"PROMPT 1: {prompt1}")
     print(f"PROMPT 2: {prompt2}")
 
@@ -96,7 +94,7 @@ async def fetch_everything(prompt: str, tags: str, model: str):
         "model": model,
         "prompt": prompt1,
         "negative_prompt": constants.DEFAULT_NEGATIVE_PROMPT,
-        "steps": 25,
+        "steps": 30,
         "cfg_scale": 7,
         "seed": -1,
         "sampler": "DPM++ 2M Karras",
@@ -107,7 +105,7 @@ async def fetch_everything(prompt: str, tags: str, model: str):
         "model": model,
         "prompt": prompt2,
         "negative_prompt": constants.DEFAULT_NEGATIVE_PROMPT,
-        "steps": 25,
+        "steps": 30,
         "cfg_scale": 7,
         "seed": -1,
         "sampler": "DPM++ 2M Karras",
@@ -124,10 +122,10 @@ async def fetch_everything(prompt: str, tags: str, model: str):
     responses = []
     async with aiohttp.ClientSession() as session:
         responses = [
-            await session.post(GENERATE_API_ENDPOINT, json=params1, headers=headers) for _ in range(3)
+            await session.post(GENERATE_API_ENDPOINT, json=params1, headers=headers) for _ in range(2)
         ]
         responses += [
-            await session.post(GENERATE_API_ENDPOINT, json=params2, headers=headers) for _ in range(3)
+            await session.post(GENERATE_API_ENDPOINT, json=params2, headers=headers) for _ in range(2)
         ]
         for response in responses:
             if response.status == 200:
