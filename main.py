@@ -76,8 +76,8 @@ def print_to_frontend(message: str):
 
 
 @app.get("/fetch_everything/")
-async def fetch_everything(prompt: str, tags: str, model: str):
-    print(f"Received prompt: {prompt}, tags: {tags}, model: {model}")
+async def fetch_everything(prompt: str, tags: str, model: str, aspect_ratio: str):
+    print(f"Received prompt: {prompt}, tags: {tags}, model: {model}, aspect_ratio: {aspect_ratio}")
     for tag in tags.split(','):
         prompt += ", image style " + tag
     prompt1 = createPrompts(prompt)
@@ -90,27 +90,35 @@ async def fetch_everything(prompt: str, tags: str, model: str):
     print(f"PROMPT 1: {prompt1}")
     print(f"PROMPT 2: {prompt2}")
 
+    # Set width and height based on aspect ratio
+    if aspect_ratio == "portrait":
+        width, height = 768, 1024
+    elif aspect_ratio == "landscape":
+        width, height = 1024, 768
+    else:  # square
+        width, height = 1024, 1024
+
     params1 = {
         "model": model,
         "prompt": prompt1,
         "negative_prompt": constants.DEFAULT_NEGATIVE_PROMPT,
         "steps": 30,
-        "cfg_scale": 7,
+        "cfg_scale": 10,
         "seed": -1,
         "sampler": "DPM++ 2M Karras",
-        "width": 1024,
-        "height": 1024
+        "width": width,
+        "height": height
     }
     params2 = {
         "model": model,
         "prompt": prompt2,
         "negative_prompt": constants.DEFAULT_NEGATIVE_PROMPT,
         "steps": 30,
-        "cfg_scale": 7,
+        "cfg_scale": 10,
         "seed": -1,
         "sampler": "DPM++ 2M Karras",
-        "width": 1024,
-        "height": 1024
+        "width": width,
+        "height": height
     }
     headers = {
         "accept": "application/json",

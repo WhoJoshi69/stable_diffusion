@@ -101,6 +101,14 @@
             <option value="">Select Model</option>
             <!-- Options will be populated dynamically -->
           </select>
+          <select
+            id="aspect-ratio-select"
+            class="p-2 rounded bg-gray-700 text-white dark:bg-gray-800 dark:text-white transition-colors duration-300"
+          >
+            <option value="portrait">Portrait (3:4)</option>
+            <option value="landscape">Landscape (4:3)</option>
+            <option value="square">Square (1:1)</option>
+          </select>
           <button
             type="submit"
             class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors duration-300"
@@ -212,7 +220,7 @@
 
       <div
         id="image-container"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-screen-xl mx-auto"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto"
       >
         <!-- Images will be populated here -->
       </div>
@@ -237,6 +245,9 @@
         const form = document.getElementById("fetch-form");
         const promptInput = document.getElementById("prompt-input");
         const modelSelect = document.getElementById("model-select");
+        const aspectRatioSelect = document.getElementById(
+          "aspect-ratio-select"
+        );
         const imageContainer = document.getElementById("image-container");
         const loader = document.getElementById("loader");
         const fullscreenContainer = document.getElementById(
@@ -261,6 +272,8 @@
             promptInput.classList.remove("bg-white", "text-gray-900");
             modelSelect.classList.add("bg-gray-800", "text-white");
             modelSelect.classList.remove("bg-white", "text-gray-900");
+            aspectRatioSelect.classList.add("bg-gray-800", "text-white");
+            aspectRatioSelect.classList.remove("bg-white", "text-gray-900");
           } else {
             darkModeToggle.innerHTML =
               '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>';
@@ -272,6 +285,8 @@
             promptInput.classList.add("bg-white", "text-gray-900");
             modelSelect.classList.remove("bg-gray-800", "text-white");
             modelSelect.classList.add("bg-white", "text-gray-900");
+            aspectRatioSelect.classList.remove("bg-gray-800", "text-white");
+            aspectRatioSelect.classList.add("bg-white", "text-gray-900");
           }
         }
 
@@ -368,6 +383,7 @@
           event.preventDefault();
           const prompt = promptInput.value;
           const modelSelected = modelSelect.value;
+          const aspectRatio = aspectRatioSelect.value;
 
           if (prompt.trim() === "") {
             alert("Please enter a valid prompt.");
@@ -385,7 +401,9 @@
             const response = await fetch(
               `/fetch_everything?prompt=${encodeURIComponent(
                 prompt
-              )}&tags=${selectedTags.join(",")}&model=${modelSelected}`
+              )}&tags=${selectedTags.join(
+                ","
+              )}&model=${modelSelected}&aspect_ratio=${aspectRatio}`
             );
             const base64Images = await response.json();
 
@@ -393,39 +411,36 @@
             imageContainer.innerHTML = "";
 
             // Calculate the number of columns based on screen width
-            const columns =
-              window.innerWidth >= 1280
-                ? 4
-                : window.innerWidth >= 1024
-                ? 3
-                : window.innerWidth >= 640
-                ? 2
-                : 1;
+            const columns = calculateColumns();
 
-            // Calculate the number of rows to make a square grid
-            const rows = Math.ceil(base64Images.length / columns);
-            const totalCells = rows * columns;
-
-            for (let i = 0; i < totalCells; i++) {
+            for (let i = 0; i < base64Images.length; i++) {
               const imgWrapper = document.createElement("div");
               imgWrapper.className =
-                "aspect-square relative overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 transition-colors duration-300 hover:shadow-xl cursor-pointer";
+                "relative overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 transition-colors duration-300 hover:shadow-xl cursor-pointer";
 
-              if (i < base64Images.length) {
-                const img = document.createElement("img");
-                img.src = `data:image/png;base64,${base64Images[i]}`;
-                img.className =
-                  "absolute w-full h-full object-cover transition-transform duration-300 hover:scale-105";
-                img.alt = "Generated image";
-                imgWrapper.appendChild(img);
+              // Set aspect ratio
+              if (aspectRatio === "portrait") {
+                imgWrapper.style.paddingBottom = "133.33%"; // 3:4 aspect ratio
+              } else if (aspectRatio === "landscape") {
+                imgWrapper.style.paddingBottom = "75%"; // 4:3 aspect ratio
+              } else {
+                imgWrapper.style.paddingBottom = "100%"; // 1:1 aspect ratio
               }
+
+              const img = document.createElement("img");
+              img.src = `data:image/png;base64,${base64Images[i]}`;
+              img.className =
+                "absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105";
+              img.alt = "Generated image";
+              imgWrapper.appendChild(img);
 
               imageContainer.appendChild(imgWrapper);
             }
 
             // Set the grid template
+            imageContainer.style.display = "grid";
             imageContainer.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-            imageContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            imageContainer.style.gap = "1rem";
           } catch (error) {
             console.error("Error fetching images:", error);
             alert("Error fetching images. Please try again later.");
@@ -434,16 +449,15 @@
           }
         });
 
+        // Function to calculate the number of columns
+        function calculateColumns() {
+          const screenWidth = window.innerWidth;
+          return screenWidth >= 1024 ? 4 : screenWidth >= 640 ? 2 : 1;
+        }
+
         // Adjust grid on window resize
         window.addEventListener("resize", () => {
-          const columns =
-            window.innerWidth >= 1280
-              ? 4
-              : window.innerWidth >= 1024
-              ? 3
-              : window.innerWidth >= 640
-              ? 2
-              : 1;
+          const columns = calculateColumns();
           imageContainer.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
         });
 
