@@ -1,277 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WhoJoshi Stable Diffusion</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #111; /* Dark background color */
-            color: #fff; /* Light text color */
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #333; /* Darker border color */
-            border-radius: 5px;
-            background-color: #222; /* Slightly lighter background color */
-        }
-        h1 {
-            text-align: center;
-        }
-        form {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        input[type="text"] {
-            flex: 1;
-            width: calc(70% - 10px);
-            margin-right: 10px;
-            padding: 10px;
-            background-color: #333; /* Darker input background color */
-            color: #fff; /* Light input text color */
-            border: none;
-            border-radius: 5px;
-        }
-        select {
-            flex: 1;
-            width: calc(70% - 10px);
-            margin-right: 10px;
-            padding: 10px;
-            background-color: #333; /* Darker input background color */
-            color: #fff; /* Light input text color */
-            border: none;
-            border-radius: 5px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #tag-options {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        #tag-options input[type="checkbox"] {
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-        #loader {
-            border: 4px solid transparent; /* Transparent border for the loader */
-            border-top: 4px solid #ffcc00; /* Yellow border for animation */
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite; /* Spin animation */
-            position: absolute; /* Position loader in the center */
-            top: 50%; /* Center vertically */
-            left: 50%; /* Center horizontally */
-            transform: translate(-50%, -50%); /* Center the loader */
-            display: none; /* Initially hide the loader */
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-#image-container {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 images per row */
-    gap: 10px; /* Space between images */
-    justify-content: center;
-}
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #111; /* Dark background color */
+        color: #fff; /* Light text color */
+      }
+      .container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 30px;
+        border: 1px solid #444;
+        border-radius: 10px;
+        background-color: #222;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
 
-#image-container img {
-    width: 100%; /* Ensure the image takes up the full width of the grid column */
-    height: auto;
-    max-width: 1024px; /* Limit to the image's native resolution */
-    max-height: 1024px;
-    border-radius: 10px;
-}
+      h1 {
+        text-align: center;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 30px;
+      }
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 12px;
+        background-color: #333;
+        color: #fff;
+        border: 1px solid #555;
+        border-radius: 5px;
+        font-size: 16px;
+      }
 
-        #download-button {
-            margin-top: 10px;
-            display: none;
-            padding: 5px 10px; /* Adjust padding as needed */
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+      input[type="text"]:focus,
+      select:focus {
+        outline: none;
+        border-color: #007bff;
+      }
+      select {
+        flex: 1;
+        width: calc(70% - 10px);
+        margin-right: 10px;
+        padding: 10px;
+        background-color: #333; /* Darker input background color */
+        color: #fff; /* Light input text color */
+        border: none;
+        border-radius: 5px;
+      }
+      button {
+        padding: 12px 24px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+      #tag-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      #tag-options label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      #tag-options input[type="checkbox"] {
+        margin-right: 8px;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #007bff;
+        border-radius: 3px;
+        background-color: #333;
+        cursor: pointer;
+      }
+
+      #tag-options input[type="checkbox"]:checked {
+        background-color: #007bff;
+      }
+      #loader {
+        border: 4px solid transparent; /* Transparent border for the loader */
+        border-top: 4px solid #ffcc00; /* Yellow border for animation */
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite; /* Spin animation */
+        position: absolute; /* Position loader in the center */
+        top: 50%; /* Center vertically */
+        left: 50%; /* Center horizontally */
+        transform: translate(-50%, -50%); /* Center the loader */
+        display: none; /* Initially hide the loader */
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-
-        #download-button:hover {
-            background-color: #0056b3;
+        100% {
+          transform: rotate(360deg);
         }
-        #image-container {
-    margin-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-#image-container img {
-    max-width: 256px;
-    max-height: 256px;
-    border-radius: 10px;
-    margin: 5px; /* Optional, for spacing between images */
-}
+      }
+      #image-container {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        justify-content: center;
+      }
 
+      #image-container img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+      }
+
+      #image-container img:hover {
+        transform: scale(1.05);
+      }
+
+      #download-button {
+        margin-top: 10px;
+        display: none;
+        padding: 5px 10px; /* Adjust padding as needed */
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #download-button:hover {
+        background-color: #0056b3;
+      }
+      #image-container {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      #image-container img {
+        max-width: 256px;
+        max-height: 256px;
+        border-radius: 10px;
+        margin: 5px; /* Optional, for spacing between images */
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div style="font-size: 10px; opacity: 0.5; font-style: italic;">
-            Created by -Darshit Joshi
+      <div style="font-size: 10px; opacity: 0.5; font-style: italic">
+        Created by -Darshit Joshi
+      </div>
+      <h1>WhoJoshi Stable Diffusion 1.4.0</h1>
+      <form id="fetch-form">
+        <div style="display: flex; align-items: center">
+          <input type="text" id="prompt-input" placeholder="Enter Prompt" />
+          <select id="model-select">
+            <!-- Dropdown options will be added dynamically using JavaScript -->
+          </select>
+          <button type="submit"><strong>Fetch Images</button></strong></button>
         </div>
-        <h1>WhoJoshi Stable Diffusion 1.4.0</h1>
-        <form id="fetch-form">
-            <div style="display: flex; align-items: center;">
-                <input type="text" id="prompt-input" placeholder="Enter Prompt">
-                <select id="model-select">
-                    <!-- Dropdown options will be added dynamically using JavaScript -->
-                </select>
-                <button type="submit">Fetch Images</button>
-            </div>
-            <div id="tag-options">
-                <input type="checkbox" id="painting" value="painting">
-                <label for="painting">Painting</label>
-                <input type="checkbox" id="cosmic" value="cosmic">
-                <label for="cosmic">Cosmic</label>
-                <input type="checkbox" id="dark" value="dark">
-                <label for="dark">Dark</label>
-                <input type="checkbox" id="horror" value="horror">
-                <label for="horror">Horror</label>
-                <input type="checkbox" id="artistic" value="artistic">
-                <label for="artistic">Artistic</label>
-                <input type="checkbox" id="nature" value="nature">
-                <label for="nature">Nature</label>
-            </div>
-        </form>
-        <div id="loader"></div>
-        <div id="image-container">
-            <img id="result-image" src="" alt="Result Image">
-            <button id="download-button" onclick="downloadImage()">Download</button>
+        <div id="tag-options">
+          <input type="checkbox" id="painting" value="painting" />
+          <label for="painting">Painting</label>
+          <input type="checkbox" id="cosmic" value="cosmic" />
+          <label for="cosmic">Cosmic</label>
+          <input type="checkbox" id="dark" value="dark" />
+          <label for="dark">Dark</label>
+          <input type="checkbox" id="horror" value="horror" />
+          <label for="horror">Horror</label>
+          <input type="checkbox" id="artistic" value="artistic" />
+          <label for="artistic">Artistic</label>
+          <input type="checkbox" id="nature" value="nature" />
+          <label for="nature">Nature</label>
         </div>
+      </form>
+      <div id="loader"></div>
+      <div id="image-container">
+        <img id="result-image" src="" alt="Result Image" />
+        <button id="download-button" onclick="downloadImage()">Download</button>
+      </div>
     </div>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-    const form = document.getElementById("fetch-form");
-    const resultImage = document.getElementById("result-image");
-    const downloadButton = document.getElementById("download-button");
-    const loader = document.getElementById("loader");
-    const modelSelect = document.getElementById("model-select");
-    const imageContainer = document.getElementById("image-container"); // Ensure this is defined
+      document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("fetch-form");
+        const resultImage = document.getElementById("result-image");
+        const downloadButton = document.getElementById("download-button");
+        const loader = document.getElementById("loader");
+        const modelSelect = document.getElementById("model-select");
+        const imageContainer = document.getElementById("image-container"); // Ensure this is defined
 
-    // Define your model_map
-    const model_map = {
-        "absolutereality_v181 (hyper realism)": "absolutereality_v181.safetensors [3d9d4d2b]",
-        "Realistic_Vision_V5.0.safetensors (hyper realism)": "Realistic_Vision_V5.0.safetensors [614d1063]",
-        "amIReal_V41.safetensors (hyper realism)": "amIReal_V41.safetensors [0a8a2e61]",
-        "cyberrealistic_v33.safetensors (hyper realism)": "cyberrealistic_v33.safetensors [82b0d085]",
-        "edgeOfRealism_eorV20.safetensors (hyper realism)": "edgeOfRealism_eorV20.safetensors [3ed5de15]",
-        "ICantBelieveItsNotPhotography_seco.safetensors (hyper realism)": "ICantBelieveItsNotPhotography_seco.safetensors [4e7a3dfd]",
-        "epicrealism_naturalSinRC1VAE.safetensors (hyper realism)": "epicrealism_naturalSinRC1VAE.safetensors [90a4c676]",
-        "juggernaut_aftermath.safetensors (hyper realism)": "juggernaut_aftermath.safetensors [5e20c455]",
-        "majicmixRealistic_v4.safetensors (hyper realism)": "majicmixRealistic_v4.safetensors [29d0de58]",
-        "rundiffusionFX_v10.safetensors (hyper realism)": "rundiffusionFX_v10.safetensors [cd4e694d]",
-        "portraitplus_V1.0.safetensors (portrait)": "portraitplus_V1.0.safetensors [1400e684]",
-        "shoninsBeautiful_v10.safetensors (portrait)": "shoninsBeautiful_v10.safetensors [25d8c546]",
-        "lyriel_v16.safetensors (semi real)": "lyriel_v16.safetensors [68fceea2]",
-        "analog-diffusion-1.0.ckpt (nature)": "analog-diffusion-1.0.ckpt [9ca13f02]",
-        "rundiffusionFX25D_v10.safetensors (2.5d)": "rundiffusionFX25D_v10.safetensors [cd12b0ee]",
-        "anythingV5_PrtRE.safetensors (anime)": "anythingV5_PrtRE.safetensors [893e49b9]",
-        "AOM3A3_orangemixs.safetensors (anime)": "AOM3A3_orangemixs.safetensors [9600da17]",
-        "dalcefo_v4.safetensors (anime)": "dalcefo_v4.safetensors [425952fe]",
-        "mechamix_v10.safetensors (anime)": "mechamix_v10.safetensors [ee685731]",
-        "cetusMix_Version35.safetensors (artistic)": "cetusMix_Version35.safetensors [de2f2560]",
-        "elldreths-vivid-mix.safetensors (cartoon)": "elldreths-vivid-mix.safetensors [342d9d26]",
-        "childrensStories_v13D.safetensors (cartoon)": "childrensStories_v13D.safetensors [9dfaabcb]",
-        "revAnimated_v122.safetensors (cartoon)": "revAnimated_v122.safetensors [3f4fefd9]",
-        "meinamix_meinaV11.safetensors (cartoon)": "meinamix_meinaV11.safetensors [b56ce717]",
-        "childrensStories_v1SemiReal.safetensors (cartoon)": "childrensStories_v1SemiReal.safetensors [a1c56dbb]",
-        "dreamshaper_8.safetensors (cartoon)": "dreamshaper_8.safetensors [9d40847d]",
-        "toonyou_beta6.safetensors (cartoon)": "toonyou_beta6.safetensors [980f6b15]",
-        "childrensStories_v1ToonAnime.safetensors (anime)": "childrensStories_v1ToonAnime.safetensors [2ec7b88b]",
-        "Counterfeit_v30.safetensors (vintage cartoon)": "Counterfeit_v30.safetensors [9e2a8f19]",
-        "cuteyukimixAdorable_midchapter3.safetensors (vintage cartoon)": "cuteyukimixAdorable_midchapter3.safetensors [04bdffe6]",
-        "deliberate_v3.safetensors (dreamy)": "deliberate_v3.safetensors [afd9d2d4]",
-        "dreamlike-diffusion-1.0.safetensors (dreamy)": "dreamlike-diffusion-1.0.safetensors [5c9fd6e0]",
-        "neverendingDream_v122.safetensors [dreamy]": "neverendingDream_v122.safetensors [f964ceeb]",
-        "openjourney_V4.ckpt [2d]": "openjourney_V4.ckpt [ca2f377f]",
-        "pastelMixStylizedAnime_pruned_fp16.safetensors (2d horror) ": "pastelMixStylizedAnime_pruned_fp16.safetensors [793a26e8]"
-    };
+        // Define your model_map
+        const model_map = {
+          "absolutereality_v181 (hyper realism)":
+            "absolutereality_v181.safetensors [3d9d4d2b]",
+          "Realistic_Vision_V5.0.safetensors (hyper realism)":
+            "Realistic_Vision_V5.0.safetensors [614d1063]",
+          "amIReal_V41.safetensors (hyper realism)":
+            "amIReal_V41.safetensors [0a8a2e61]",
+          "cyberrealistic_v33.safetensors (hyper realism)":
+            "cyberrealistic_v33.safetensors [82b0d085]",
+          "edgeOfRealism_eorV20.safetensors (hyper realism)":
+            "edgeOfRealism_eorV20.safetensors [3ed5de15]",
+          "ICantBelieveItsNotPhotography_seco.safetensors (hyper realism)":
+            "ICantBelieveItsNotPhotography_seco.safetensors [4e7a3dfd]",
+          "epicrealism_naturalSinRC1VAE.safetensors (hyper realism)":
+            "epicrealism_naturalSinRC1VAE.safetensors [90a4c676]",
+          "juggernaut_aftermath.safetensors (hyper realism)":
+            "juggernaut_aftermath.safetensors [5e20c455]",
+          "majicmixRealistic_v4.safetensors (hyper realism)":
+            "majicmixRealistic_v4.safetensors [29d0de58]",
+          "rundiffusionFX_v10.safetensors (hyper realism)":
+            "rundiffusionFX_v10.safetensors [cd4e694d]",
+          "portraitplus_V1.0.safetensors (portrait)":
+            "portraitplus_V1.0.safetensors [1400e684]",
+          "shoninsBeautiful_v10.safetensors (portrait)":
+            "shoninsBeautiful_v10.safetensors [25d8c546]",
+          "lyriel_v16.safetensors (semi real)":
+            "lyriel_v16.safetensors [68fceea2]",
+          "analog-diffusion-1.0.ckpt (nature)":
+            "analog-diffusion-1.0.ckpt [9ca13f02]",
+          "rundiffusionFX25D_v10.safetensors (2.5d)":
+            "rundiffusionFX25D_v10.safetensors [cd12b0ee]",
+          "anythingV5_PrtRE.safetensors (anime)":
+            "anythingV5_PrtRE.safetensors [893e49b9]",
+          "AOM3A3_orangemixs.safetensors (anime)":
+            "AOM3A3_orangemixs.safetensors [9600da17]",
+          "dalcefo_v4.safetensors (anime)": "dalcefo_v4.safetensors [425952fe]",
+          "mechamix_v10.safetensors (anime)":
+            "mechamix_v10.safetensors [ee685731]",
+          "cetusMix_Version35.safetensors (artistic)":
+            "cetusMix_Version35.safetensors [de2f2560]",
+          "elldreths-vivid-mix.safetensors (cartoon)":
+            "elldreths-vivid-mix.safetensors [342d9d26]",
+          "childrensStories_v13D.safetensors (cartoon)":
+            "childrensStories_v13D.safetensors [9dfaabcb]",
+          "revAnimated_v122.safetensors (cartoon)":
+            "revAnimated_v122.safetensors [3f4fefd9]",
+          "meinamix_meinaV11.safetensors (cartoon)":
+            "meinamix_meinaV11.safetensors [b56ce717]",
+          "childrensStories_v1SemiReal.safetensors (cartoon)":
+            "childrensStories_v1SemiReal.safetensors [a1c56dbb]",
+          "dreamshaper_8.safetensors (cartoon)":
+            "dreamshaper_8.safetensors [9d40847d]",
+          "toonyou_beta6.safetensors (cartoon)":
+            "toonyou_beta6.safetensors [980f6b15]",
+          "childrensStories_v1ToonAnime.safetensors (anime)":
+            "childrensStories_v1ToonAnime.safetensors [2ec7b88b]",
+          "Counterfeit_v30.safetensors (vintage cartoon)":
+            "Counterfeit_v30.safetensors [9e2a8f19]",
+          "cuteyukimixAdorable_midchapter3.safetensors (vintage cartoon)":
+            "cuteyukimixAdorable_midchapter3.safetensors [04bdffe6]",
+          "deliberate_v3.safetensors (dreamy)":
+            "deliberate_v3.safetensors [afd9d2d4]",
+          "dreamlike-diffusion-1.0.safetensors (dreamy)":
+            "dreamlike-diffusion-1.0.safetensors [5c9fd6e0]",
+          "neverendingDream_v122.safetensors [dreamy]":
+            "neverendingDream_v122.safetensors [f964ceeb]",
+          "openjourney_V4.ckpt [2d]": "openjourney_V4.ckpt [ca2f377f]",
+          "pastelMixStylizedAnime_pruned_fp16.safetensors (2d horror) ":
+            "pastelMixStylizedAnime_pruned_fp16.safetensors [793a26e8]",
+        };
 
-    // Populate the dropdown with options from model_map
-    for (const [key, value] of Object.entries(model_map)) {
-        const option = document.createElement("option");
-        option.text = key;
-        option.value = value;
-        modelSelect.add(option);
-    }
-
-    form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const promptInput = document.getElementById("prompt-input");
-        const prompt = promptInput.value;
-
-        if (prompt.trim() === "") {
-            alert("Please enter a valid prompt.");
-            return;
+        // Populate the dropdown with options from model_map
+        for (const [key, value] of Object.entries(model_map)) {
+          const option = document.createElement("option");
+          option.text = key;
+          option.value = value;
+          modelSelect.add(option);
         }
 
-        const selectedTags = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(tag => tag.value);
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const promptInput = document.getElementById("prompt-input");
+          const prompt = promptInput.value;
 
-        resultImage.style.display = "none";
-        loader.style.display = "block";
-        downloadButton.style.display = 'none';
+          if (prompt.trim() === "") {
+            alert("Please enter a valid prompt.");
+            return;
+          }
 
-        try {
+          const selectedTags = Array.from(
+            document.querySelectorAll('input[type="checkbox"]:checked')
+          ).map((tag) => tag.value);
+
+          resultImage.style.display = "none";
+          loader.style.display = "block";
+          downloadButton.style.display = "none";
+
+          try {
             const modelSelected = modelSelect.value;
-            const response = await fetch(`/fetch_everything?prompt=${encodeURIComponent(prompt)}&tags=${selectedTags.join(',')}&model=${modelSelected}`);
+            const response = await fetch(
+              `/fetch_everything?prompt=${encodeURIComponent(
+                prompt
+              )}&tags=${selectedTags.join(",")}&model=${modelSelected}`
+            );
             const base64Images = await response.json();
 
-            imageContainer.innerHTML = ''; // Clear any existing images
+            imageContainer.innerHTML = ""; // Clear any existing images
 
-            base64Images.forEach(base64Image => {
-                const img = document.createElement('img');
-                img.src = `data:image/png;base64,${base64Image}`;
-                img.style.display = "block";
-                imageContainer.appendChild(img);
+            base64Images.forEach((base64Image) => {
+              const img = document.createElement("img");
+              img.src = `data:image/png;base64,${base64Image}`;
+              img.style.display = "block";
+              imageContainer.appendChild(img);
             });
 
             loader.style.display = "none";
             downloadButton.style.display = "none"; // Adjust as needed
-
-        } catch (error) {
-            console.error('Error fetching images:', error);
+          } catch (error) {
+            console.error("Error fetching images:", error);
             alert("Error fetching images. Please try again later.");
             loader.style.display = "none";
+          }
+        });
+
+        function downloadImage() {
+          const a = document.createElement("a");
+          a.href = resultImage.src;
+          a.download = "image.png";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
         }
-    });
-
-    function downloadImage() {
-        const a = document.createElement('a');
-        a.href = resultImage.src;
-        a.download = 'image.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
-});
-
+      });
     </script>
-</body>
+  </body>
 </html>

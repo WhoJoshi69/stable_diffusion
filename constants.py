@@ -24,6 +24,8 @@ DEFAULT_PROMPT_4 = """Instruction Set for Image Prompt Diversification:
                     - Determine if any specific languages or cultures are particularly relevant to the subject matter of the image prompt. Consider the popularity of languages online, prioritizing more widely used words.
                     - Generate one distinctive new prompt that describes the same image from different perspectives while describing the same actual image.
                     - Ensure that the prompts are diverse and avoid overfitting by following these guidelines:
+                      - high weight statement: there should be only one person in image.
+                      - high weight statement: no extra limbs, no weird anatomy
                       - Maintain a clear and vivid description of the image, including details about the main subject, setting, colors, lighting, and overall mood.
                       - Express these elements using varied vocabulary and sentence structure. Don't reuse adjectives, nouns, verbs, or even
                       - If a visual style or artist reference is present in the prompt, expand the prompt to contain many more details about the style or artists.
