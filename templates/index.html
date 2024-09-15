@@ -22,6 +22,43 @@
       #image-container img:hover {
         transform: scale(1.05);
       }
+      .fullscreen-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .fullscreen-image {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+      }
+      .nav-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .nav-button:hover {
+        background-color: rgba(255, 255, 255, 0.5);
+      }
+      .prev-button {
+        left: 20px;
+      }
+      .next-button {
+        right: 20px;
+      }
     </style>
   </head>
   <body class="bg-dark text-white transition-colors duration-300">
@@ -99,6 +136,17 @@
       </div>
     </div>
 
+    <div id="fullscreen-container" class="fullscreen-overlay hidden">
+      <img
+        id="fullscreen-image"
+        class="fullscreen-image"
+        src=""
+        alt="Fullscreen image"
+      />
+      <div class="nav-button prev-button">&lt;</div>
+      <div class="nav-button next-button">&gt;</div>
+    </div>
+
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const html = document.documentElement;
@@ -109,6 +157,14 @@
         const modelSelect = document.getElementById("model-select");
         const imageContainer = document.getElementById("image-container");
         const loader = document.getElementById("loader");
+        const fullscreenContainer = document.getElementById(
+          "fullscreen-container"
+        );
+        const fullscreenImage = document.getElementById("fullscreen-image");
+        const prevButton = document.querySelector(".prev-button");
+        const nextButton = document.querySelector(".next-button");
+        let currentImageIndex = 0;
+        let images = [];
 
         // Update dark mode toggle
         function updateDarkMode() {
@@ -271,7 +327,7 @@
             for (let i = 0; i < totalCells; i++) {
               const imgWrapper = document.createElement("div");
               imgWrapper.className =
-                "aspect-square relative overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 transition-colors duration-300 hover:shadow-xl";
+                "aspect-square relative overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 transition-colors duration-300 hover:shadow-xl cursor-pointer";
 
               if (i < base64Images.length) {
                 const img = document.createElement("img");
@@ -307,6 +363,58 @@
               ? 2
               : 1;
           imageContainer.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+        });
+
+        function showFullscreen(index) {
+          currentImageIndex = index;
+          fullscreenImage.src = images[index].src;
+          fullscreenContainer.classList.remove("hidden");
+        }
+
+        function hideFullscreen() {
+          fullscreenContainer.classList.add("hidden");
+        }
+
+        function navigateImage(direction) {
+          currentImageIndex =
+            (currentImageIndex + direction + images.length) % images.length;
+          showFullscreen(currentImageIndex);
+        }
+
+        imageContainer.addEventListener("click", (event) => {
+          if (event.target.tagName === "IMG") {
+            images = Array.from(imageContainer.querySelectorAll("img"));
+            const clickedIndex = images.indexOf(event.target);
+            showFullscreen(clickedIndex);
+          }
+        });
+
+        fullscreenContainer.addEventListener("click", (event) => {
+          if (event.target === fullscreenContainer) {
+            hideFullscreen();
+          }
+        });
+
+        prevButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          navigateImage(-1);
+        });
+
+        nextButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          navigateImage(1);
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (!fullscreenContainer.classList.contains("hidden")) {
+            if (event.key === "ArrowLeft") {
+              navigateImage(-1);
+            } else if (event.key === "ArrowRight") {
+              navigateImage(1);
+            } else if (event.key === "Escape") {
+              hideFullscreen();
+            }
+          }
         });
       });
     </script>
